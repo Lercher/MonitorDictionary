@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lercher.MonitorDictionary
+namespace Lercher
 {
     class Program
     {
