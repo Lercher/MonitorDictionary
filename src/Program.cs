@@ -10,7 +10,7 @@ namespace Lercher
             System.Console.WriteLine("(C) 2018 by Martin Lercher");
             System.Console.WriteLine();
             var c = new SampleClient();
-            c.Run(100, 3, 6, TimeSpan.FromMilliseconds(10));
+            c.Run(10_000, 2, 6, 1_000_000);
             System.Console.WriteLine(c);
         }
     }

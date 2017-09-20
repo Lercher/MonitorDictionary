@@ -79,3 +79,29 @@ waiting thread, the key is removed from the underlying dictionary.
 statistics to the Console. Throws, if the collection was not used at all,
 if the dictionary is not empty or, if the concurrency level of the
 test was to low.
+
+## Sample Timing Explained
+
+This was run on a current Core i5 processor, i.e. 2 cores 4 threads.
+It does busy waiting to simulate CPU intense work, however, it reads a randomly selected (2d6) int from an array with 11 items, waits a little bit and writes the incremented value back to the array. Repeat.
+
+````
+sequential: 00:00:12.0688195
+unlocked: 00:00:03.2108830
+monitored: 00:00:04.1203412
+0 current keys, 5 max keys, 5 max concurrent use count
+globallock: 00:00:12.3116187
+````
+
+* sequential - means what it says. Every other timing is measured
+  by queuing one increment operation each to the ThreadPool.
+* unlocked - no locking at all. Of course, lots of overwritten values,
+  i.e.  standard concurrency violation errors, but we see that 4
+  threads reduce the time to approximatly one 4th
+  of the sequential timing. Should be near the maximum throughput
+  possible.
+* monitored - using the locking mechanism presented here. The overhead
+  of locking slows the figures down to about one 3rd.
+* globallock - locking the array as a whole for every access. This      
+  degenerates the access pattern to the serial one effectively.
+  

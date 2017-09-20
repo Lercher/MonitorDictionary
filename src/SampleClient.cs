@@ -14,14 +14,16 @@ namespace Lercher
 
         private MonitorDictionary<int> transactions = new MonitorDictionary<int>();
 
-        private void operate(int[] arr, int dice, TimeSpan runtime)
+        private void operate(int[] arr, int dice, int spincount)
         {
             var count = arr[dice];
-            if (runtime > TimeSpan.Zero)
-                Thread.Sleep(runtime);
+            for(var i = 0; i < spincount; i++)
+            {
+                // spin
+            }
             arr[dice] = count + 1;
         }
-        public void Run(int rounds, int count, int sides, TimeSpan runtime)
+        public void Run(int rounds, int count, int sides, int spincount)
         {
             int possibleSums0 = count * (sides - 1) + 1;
             sequential = new int[possibleSums0];
@@ -31,20 +33,20 @@ namespace Lercher
 
             Run(nameof(sequential), rounds, count, sides, (dice, cd) => 
             {
-                operate(sequential, dice, TimeSpan.Zero);
+                operate(sequential, dice, spincount);
                 cd.Signal();
             });
 
             Run(nameof(unlocked), rounds, count, sides, (dice, cd) => ThreadPool.QueueUserWorkItem((o) =>
             {
-                operate(unlocked, dice, runtime);
+                operate(unlocked, dice, spincount);
                 cd.Signal();
             }));
 
             Run(nameof(monitored), rounds, count, sides, (dice, cd) => ThreadPool.QueueUserWorkItem((o) =>
             {
                 using (transactions.Guard(dice))
-                    operate(monitored, dice, runtime);
+                    operate(monitored, dice, spincount);
                 cd.Signal();
             }));
             transactions.AssertIsClearAfterUse();
@@ -52,7 +54,7 @@ namespace Lercher
             Run(nameof(globallock), rounds, count, sides, (dice, cd) => ThreadPool.QueueUserWorkItem((o) =>
             {
                 lock (globallock)
-                    operate(globallock, dice, runtime);
+                    operate(globallock, dice, spincount);
                 cd.Signal();
             }));
             System.Console.WriteLine();
@@ -86,11 +88,14 @@ namespace Lercher
 
         private void DescribeTo(System.Text.StringBuilder sb, int[] arr, string title)
         {
-            sb.AppendLine(title);
-            sb.AppendLine("-----------");
+            sb.AppendFormat("{0} {1} {0}\n", "-----------", title);
+            var sum = 0;
             for (var i = 0; i < arr.Length; i++)
+            {
                 sb.AppendFormat("{0,3:n0} -> {1,5:n0}{2}\n", i, arr[i], arr[i] == sequential[i] ? "" : " !");
-            sb.AppendLine();
+                sum += arr[i];
+            }
+            sb.AppendFormat("Sum: {0,7:n0}\n\n", sum);
         }
 
         private int rollDice0(int count, int sides)
