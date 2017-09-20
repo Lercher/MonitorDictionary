@@ -4,6 +4,7 @@ This is test program for the MonitorDictionary class.
 sequential: 00:00:00.0051293
 unlocked: 00:00:00.2994280
 monitored: 00:00:00.2832839
+0 current keys, 5 max keys, 3 max concurrent use count
 globallock: 00:00:01.1955648
 
 sequential

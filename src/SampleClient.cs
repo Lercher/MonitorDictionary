@@ -47,6 +47,7 @@ namespace Lercher
                     operate(monitored, dice, runtime);
                 cd.Signal();
             }));
+            transactions.AssertIsClearAfterUse();
 
             Run(nameof(globallock), rounds, count, sides, (dice, cd) => ThreadPool.QueueUserWorkItem((o) =>
             {
