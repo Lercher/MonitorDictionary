@@ -104,4 +104,26 @@ globallock: 00:00:12.3116187
   of locking slows the figures down to about one 3rd.
 * globallock - locking the array as a whole for every access. This      
   degenerates the access pattern to the serial one effectively.
-  
+
+
+## Usage and Incubation Status
+
+Currently only by copying the source in https://github.com/Lercher/MonitorDictionary/blob/master/src/MonitorDictionary.cs
+to your project. Please note that this code is fresh, so it 
+contains bugs. Handle with care, use at your own risk 
+and feel free to fork and improve the code.
+
+## Building the Console Application
+
+Git clone first, then cd to the directory and:
+
+````
+dotnet restore
+dotnet build
+dotnet run
+````
+
+
+## License
+
+https://en.wikipedia.org/wiki/MIT_License
