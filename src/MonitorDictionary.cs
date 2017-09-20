@@ -22,15 +22,13 @@ namespace Lercher
 
             internal Resource(MonitorDictionary<T> container, T key)
             {
-                this.container = container; 
+                this.container = container;
                 this.Key = key;
             }
 
-            internal Resource Use(int count)
+            internal Resource Use()
             {
-                Monitor.Enter(this);
-                if (count > 0)
-                    countDown.AddCount(count);
+                countDown.AddCount();
                 return this;
             }
 
@@ -38,10 +36,13 @@ namespace Lercher
             {
                 try
                 {
-                    countDown.Signal();
-                    if (countDown.IsSet)
+                    lock(container) 
                     {
-                        container.Remove(this);
+                        countDown.Signal();
+                        if (countDown.IsSet)
+                        {
+                            container.Remove(this);
+                        }
                     }
                 }
                 finally
@@ -53,25 +54,29 @@ namespace Lercher
 
         private void Remove(Resource resource)
         {
-            lock (dictionary)
-                dictionary.Remove(resource.Key);
+            dictionary.Remove(resource.Key);
         }
 
-        public IBlock<T> Use(T key)
+        public IBlock<T> Guard(T key)
         {
             Resource res;
-            var count01 = 1;
-            lock (dictionary)
+            lock(this)
             {
                 if (!dictionary.TryGetValue(key, out res))
                 {
                     res = new Resource(this, key);
                     dictionary.Add(key, res);
-                    count01 = 0; // don't add to the countdown, because we already started with 1
+                    // don't add to the countdown, because we already started with 1                     
+                    Monitor.Enter(res); // The Monitor can't lock here, because we created res newly
+                    return res;
                 }
+                // existing resource: we need to add 1 to the use count while holding the dictionary lock
+                // because otherwise a res.Dispose() call on a different thread would try to remove res from the dictionary
+                res.Use(); 
             }
-            // outside the dictionary lock:
-            return res.Use(count01);
+            // existing resource, lock outside the dictionary lock to avoid a deadlock:
+            Monitor.Enter(res);
+            return res;
         }
     }
 }
