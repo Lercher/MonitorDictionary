@@ -102,7 +102,7 @@ globallock: 00:00:12.3116187
   possible.
 * monitored - using the locking mechanism presented here. The overhead
   of locking slows the figures down to about one 3rd.
-* globallock - locking the array as a whole for every access. This      
+* globallock - locking the array as a whole for every access. This
   degenerates the access pattern to the serial one effectively.
 
 
