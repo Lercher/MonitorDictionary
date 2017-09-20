@@ -22,13 +22,15 @@ namespace Lercher
 
             internal Resource(MonitorDictionary<T> container, T key)
             {
-                this.container = container; this.Key = key;
+                this.container = container; 
+                this.Key = key;
             }
 
             internal Resource Use(int count)
             {
                 Monitor.Enter(this);
-                countDown.AddCount(count);
+                if (count > 0)
+                    countDown.AddCount(count);
                 return this;
             }
 
