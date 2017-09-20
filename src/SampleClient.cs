@@ -31,7 +31,7 @@ namespace Lercher
 
             Run(nameof(sequential), rounds, count, sides, (dice, cd) => 
             {
-                operate(sequential, dice, runtime);
+                operate(sequential, dice, TimeSpan.Zero);
                 cd.Signal();
             });
 
@@ -54,10 +54,12 @@ namespace Lercher
                     operate(globallock, dice, runtime);
                 cd.Signal();
             }));
+            System.Console.WriteLine();
         }
 
         private void Run(string name, int rounds, int count, int sides, Action<int, CountdownEvent> each)
         {
+            System.Console.Write("{0}: ", name);
             var sw = Stopwatch.StartNew();
             var cd = new CountdownEvent(rounds);
             rnd = new Random(0); // use a seed to be reproducable
@@ -68,7 +70,7 @@ namespace Lercher
             }
             cd.Wait();
             sw.Stop();
-            System.Console.WriteLine("{0}: {1}", name, sw.Elapsed);
+            System.Console.WriteLine(sw.Elapsed);
         }
 
         public override string ToString()

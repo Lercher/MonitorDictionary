@@ -4,17 +4,12 @@ using System.Collections.Generic;
 
 namespace Lercher
 {
-    public interface IBlock<T> : IDisposable
-    {
-
-    }
-
     public class MonitorDictionary<T>
     {
         private Dictionary<T, Resource> dictionary = new Dictionary<T, Resource>();
 
 
-        public class Resource : IBlock<T>
+        public class Resource : IDisposable
         {
             private CountdownEvent countDown = new CountdownEvent(1);
             private MonitorDictionary<T> container;
@@ -57,7 +52,7 @@ namespace Lercher
             dictionary.Remove(resource.Key);
         }
 
-        public IBlock<T> Guard(T key)
+        public IDisposable Guard(T key)
         {
             Resource res;
             lock(this)
