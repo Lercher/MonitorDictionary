@@ -17,6 +17,8 @@ their keys. This can happen, for example, if
   counters
 * such a mutatable consists of multiple CLR objects that cannot be
   aggregated or locked individually (deadlock danger)
+* multiple, separatly syncronized threads change a single mutatable
+  that don't have access to an individual lock
 
 In a multithreaded environment, you can and might want to
 change these mutatables with different keys concurrently, but you have to
@@ -82,8 +84,53 @@ test was to low.
 
 ## Sample Timing Explained
 
-This was run on a current Core i5 processor, i.e. 2 cores 4 threads.
-It does busy waiting to simulate CPU intense work, however, it reads a randomly selected (2d6) int from an array with 11 items, waits a little bit and writes the incremented value back to the array. Repeat.
+This program was run on a current Core i5 processor, i.e. 2 cores 4 threads. Please see the file `SampleOutput.txt` for reference.
+
+### Sample Timing Explained - Part 1
+
+It starts 10 threads to repeatedly read and compare counts form 
+a 10 elements long int array plus sleeping a random time.
+
+Furthermore, it starts 10 threads to repeatedly lock and 
+increment counts on this array with nearly constant simulated 
+operation time. The sleep time of these threads increases by
+the index into the array.
+
+These 20 threads are allowed to run for about 30 seconds. 
+All threads do the bookkeeping in a separate array, only 
+accessed by Interlocked, to 'know the truth'.
+
+````
+Stopping in 30s ....
+
+----------- interlocked -----------
+  0 -> 111.977
+  1 -> 1.910
+  2 -> 1.351
+  3 -> 1.017
+  4 ->   818
+  5 ->   699
+  6 ->   622
+  7 ->   550
+  8 ->   511
+  9 ->   469
+Sum: 119.924
+
+----------- monitored -----------
+  0 -> 111.977
+  1 -> 1.910
+  ...
+````
+
+In the two tables we see, how often an index was incremented
+in this timespan and that the figures for the interlocked
+array and the array locked by `MontitorDictionary<int>` are
+identical.
+
+### Sample Timing Explained - Part 2
+It does busy waiting to simulate CPU intense work, however, it reads 
+a randomly selected (2d6) int from an array with 11 items, waits a 
+little bit and writes the incremented value back to the array. Repeat.
 
 ````
 sequential: 00:00:12.0688195
@@ -91,6 +138,13 @@ unlocked: 00:00:03.2108830
 monitored: 00:00:04.1203412
 0 current keys, 5 max keys, 5 max concurrent use count
 globallock: 00:00:12.3116187
+
+----------- sequential -----------
+  0 ->   294
+  1 ->   572
+  2 ->   849
+  3 -> 1.102
+  ...
 ````
 
 * sequential - means what it says. Every other timing is measured
